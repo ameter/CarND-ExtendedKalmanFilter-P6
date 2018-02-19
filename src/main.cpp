@@ -26,8 +26,7 @@ std::string hasData(std::string s) {
   return "";
 }
 
-int main()
-{
+int main() {
   uWS::Hub h;
 
   // Create a Kalman Filter instance
@@ -91,40 +90,40 @@ int main()
           		meas_package.timestamp_ = timestamp;
           }
           float x_gt;
-    	  float y_gt;
-    	  float vx_gt;
-    	  float vy_gt;
-    	  iss >> x_gt;
-    	  iss >> y_gt;
-    	  iss >> vx_gt;
-    	  iss >> vy_gt;
-    	  VectorXd gt_values(4);
-    	  gt_values(0) = x_gt;
-    	  gt_values(1) = y_gt; 
-    	  gt_values(2) = vx_gt;
-    	  gt_values(3) = vy_gt;
-    	  ground_truth.push_back(gt_values);
+          float y_gt;
+          float vx_gt;
+          float vy_gt;
+          iss >> x_gt;
+          iss >> y_gt;
+          iss >> vx_gt;
+          iss >> vy_gt;
+          VectorXd gt_values(4);
+          gt_values(0) = x_gt;
+          gt_values(1) = y_gt;
+          gt_values(2) = vx_gt;
+          gt_values(3) = vy_gt;
+          ground_truth.push_back(gt_values);
           
-          //Call ProcessMeasurment(meas_package) for Kalman filter
-    	  fusionEKF.ProcessMeasurement(meas_package);    	  
+            //Call ProcessMeasurment(meas_package) for Kalman filter
+          fusionEKF.ProcessMeasurement(meas_package);
 
-    	  //Push the current estimated x,y positon from the Kalman filter's state vector
+          //Push the current estimated x,y positon from the Kalman filter's state vector
 
-    	  VectorXd estimate(4);
+          VectorXd estimate(4);
 
-    	  double p_x = fusionEKF.ekf_.x_(0);
-    	  double p_y = fusionEKF.ekf_.x_(1);
-    	  double v1  = fusionEKF.ekf_.x_(2);
-    	  double v2 = fusionEKF.ekf_.x_(3);
+          double p_x = fusionEKF.ekf_.x_(0);
+          double p_y = fusionEKF.ekf_.x_(1);
+          double v1  = fusionEKF.ekf_.x_(2);
+          double v2 = fusionEKF.ekf_.x_(3);
 
-    	  estimate(0) = p_x;
-    	  estimate(1) = p_y;
-    	  estimate(2) = v1;
-    	  estimate(3) = v2;
-    	  
-    	  estimations.push_back(estimate);
+          estimate(0) = p_x;
+          estimate(1) = p_y;
+          estimate(2) = v1;
+          estimate(3) = v2;
+          
+          estimations.push_back(estimate);
 
-    	  VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
+          VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
 
           json msgJson;
           msgJson["estimate_x"] = p_x;
@@ -136,7 +135,22 @@ int main()
           auto msg = "42[\"estimate_marker\"," + msgJson.dump() + "]";
           // std::cout << msg << std::endl;
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
-	  
+          
+          // Create static variables to track max RMSE values.
+          static float maxRmse_x = 0.0, maxRmse_y = 0.0, maxRmse_vx = 0.0, maxRmse_vy = 0.0;
+          static int measurmentCnt = 0;
+          measurmentCnt++;
+          if (measurmentCnt > 100) {
+            if (RMSE(0) > maxRmse_x) maxRmse_x = RMSE(0);
+            if (RMSE(1) > maxRmse_y) maxRmse_y = RMSE(1);
+            if (RMSE(2) > maxRmse_vx) maxRmse_vx = RMSE(2);
+            if (RMSE(3) > maxRmse_vy) maxRmse_vy = RMSE(3);
+            cout << "Max RMSE Values..." << endl;
+            cout << "\tX: " << maxRmse_x << endl;
+            cout << "\tY: " << maxRmse_y << endl;
+            cout << "\tVX: " << maxRmse_vx << endl;
+            cout << "\tVY: " << maxRmse_vy << endl;
+          }
         }
       } else {
         
