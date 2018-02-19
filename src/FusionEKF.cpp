@@ -37,20 +37,7 @@ FusionEKF::FusionEKF() {
   
   ekf_.F_ = MatrixXd(4, 4);
   ekf_.P_ = MatrixXd(4, 4);
-   
-  /*
-  // acceleration noise components (5-13)
-  noise_ax = 9;
-  noise_ay = 9;
-  */
-   
-  /**
-  TODO:
-    * Finish initializing the FusionEKF.
-    * Set the process and measurement noises
-  */
-
-
+  
 }
 
 /**
@@ -65,16 +52,15 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    *  Initialization
    ****************************************************************************/
   if (!is_initialized_) {
-    /**
-    TODO:
-      * Initialize the state ekf_.x_ with the first measurement.
-      * Create the covariance matrix.
-      * Remember: you'll need to convert radar from polar to cartesian coordinates.
+    /*
+    Initialize the state ekf_.x_ with the first measurement.
+    Create the covariance matrix.
+    Convert radar from polar to cartesian coordinates.
     */
-    // first measurement
+    
     cout << "EKF: " << endl;
     ekf_.x_ = VectorXd(4);
-    ekf_.x_ << 1, 1, 3.0, 0.5; // matters for RMSE, second two values can be manipulated/tweaked.
+    ekf_.x_ << 1, 1, 4.0, 0.5; // matters for RMSE, second two values can be manipulated/tweaked.
 
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       /**
